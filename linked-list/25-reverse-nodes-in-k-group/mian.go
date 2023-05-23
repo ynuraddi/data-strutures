@@ -1,6 +1,9 @@
 package main
 
+import "fmt"
+
 func main() {
+	fmt.Println(reverseKGroup(&ListNode{Val: 3, Next: nil}, 1))
 }
 
 type ListNode struct {
