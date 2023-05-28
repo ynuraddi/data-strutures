@@ -1,6 +1,8 @@
 package main
 
 func main() {
+	isSameTree(&TreeNode{}, &TreeNode{})
+	isSubtree(&TreeNode{}, &TreeNode{})
 }
 
 type TreeNode struct {
