@@ -27,7 +27,7 @@ func canPartition(nums []int) bool {
 		}
 
 		for j := sum - num - 1; j >= 0; j-- {
-			if dp[j] == true {
+			if dp[j] {
 				dp[j+num] = true
 			}
 		}
