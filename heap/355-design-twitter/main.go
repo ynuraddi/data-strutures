@@ -25,6 +25,8 @@ type Tweet struct {
 	followeeId int
 }
 
+var _ heap.Interface = (*TweetHeap)(nil)
+
 type TweetHeap []*Tweet
 
 func (h TweetHeap) Len() int            { return len(h) }
