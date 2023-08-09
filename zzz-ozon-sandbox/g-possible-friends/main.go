@@ -3,30 +3,25 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
+	"sort"
 )
 
-// const input = `
-// 8 6
-// 4 3
-// 3 1
-// 1 2
-// 2 4
-// 2 5
-// 6 8
+const input = `
+8 10
+1 2
+1 3
+1 4
+4 3
+3 2
+2 4
+1 8
+5 6
+7 6
+5 7
 
-// `
-
-// dinamic caching
-type User struct {
-	ID      int
-	Friends []*User
-
-	countOfFriends int
-
-	maxFriend         int
-	maxFriendWithUser []int
-}
+`
 
 // Я РЕШАЮ ЗАДАЧИ В ШКОЛЕ, НО КОНТЕСТ ПОСТАРАЮСЬ ДОМА, У МЕНЯ НЕТ НОУТБУКА
 func main() {
@@ -38,77 +33,99 @@ func main() {
 	var n, m int
 	fmt.Fscan(in, &n, &m)
 
-	users := make([]*User, n)
-	for i := range users {
-		users[i] = &User{
-			ID:      i,
-			Friends: make([]*User, n),
-
-			maxFriendWithUser: make([]int, n),
-		}
-	}
+	users := make([][]int, n)
+	usersF := make([]int, n)
 
 	for i := 0; i < m; i++ {
-		var id1, id2 int
-		fmt.Fscan(in, &id1, &id2)
+		var user1, user2 int
+		fmt.Fscan(in, &user1, &user2)
+		user1, user2 = user1-1, user2-1
 
-		id1, id2 = id1-1, id2-1
+		// users[user1][user2] = -1
+		// users[user2][user1] = -1
+		users[user1] = append(users[user1], user2)
+		users[user2] = append(users[user2], user1)
 
-		if users[id1].Friends[id2] != nil || users[id2].Friends[id1] != nil {
+		usersF[user1] += 1
+		usersF[user2] += 1
+	}
+
+	usersFF := make([]map[int]int, n)
+
+	for i := 0; i < n; i++ {
+		if usersF[i] == 0 {
 			continue
 		}
 
-		users[id1].Friends[id2] = users[id2]
-		users[id2].Friends[id1] = users[id1]
-
-		users[id1].countOfFriends += 1
-		users[id2].countOfFriends += 1
-	}
-
-	for i := range users {
-		for j := 0; j < n; j++ {
-			if users[i].Friends[j] == nil {
+		for j := 0; j < len(users[i]); j++ {
+			JfI := users[i][j]
+			mutualF := compareArrays(users[i], users[JfI], i, JfI)
+			if len(mutualF) == 0 {
 				continue
 			}
-			friendOfI := users[i].Friends[j]
-
-			for k := range friendOfI.Friends {
-				if k == j || k == i || friendOfI.Friends[k] == nil || areFriends(users[i], friendOfI.Friends[k]) {
-					continue
-				}
-
-				mutualFriend(users[i], friendOfI.Friends[k])
+			if usersFF[i] == nil {
+				usersFF[i] = make(map[int]int, 5)
 			}
+			for _, u := range mutualF {
+				usersFF[i][u] += 1
+			}
+
 		}
 	}
 
-	for _, u := range users {
-		if u.maxFriend == 0 {
-			fmt.Fprint(out, 0, " ")
-			fmt.Fprintln(out)
+	for _, uff := range usersFF {
+		usersFriendsPrint(out, uff)
+	}
+}
+
+func usersFriendsPrint(out io.Writer, uff map[int]int) {
+	if uff == nil {
+		fmt.Fprintln(out, 0)
+		return
+	}
+
+	var max int
+	for _, v := range uff {
+		if max < v {
+			max = v
+		}
+	}
+
+	var result []int
+
+	for k, v := range uff {
+		if max != v {
 			continue
 		}
-		for uid, ff := range u.maxFriendWithUser {
-			if ff == u.maxFriend {
-				fmt.Fprint(out, uid+1, " ")
-			}
+		result = append(result, k+1)
+	}
+
+	sort.Ints(result)
+
+	for _, v := range result {
+		fmt.Fprint(out, v, " ")
+	}
+
+	fmt.Fprintln(out)
+}
+
+func compareArrays(userF, FF []int, uid, fid int) []int {
+	hash := make(map[int]bool, 5)
+
+	for _, u := range userF {
+		if u == fid {
+			continue
 		}
-		fmt.Fprintln(out)
+		hash[u] = true
 	}
-}
 
-func areFriends(u1, u2 *User) bool {
-	return u1.Friends[u2.ID] != nil
-}
+	result := make([]int, 0, 5)
 
-func mutualFriend(u1, u2 *User) {
-	u1.maxFriendWithUser[u2.ID] += 1
-	u2.maxFriendWithUser[u1.ID] += 1
-
-	if u1.maxFriend < u1.maxFriendWithUser[u2.ID] {
-		u1.maxFriend = u1.maxFriendWithUser[u2.ID]
+	for _, u := range FF {
+		if !hash[u] && u != uid {
+			result = append(result, u)
+		}
 	}
-	if u2.maxFriend < u2.maxFriendWithUser[u1.ID] {
-		u2.maxFriend = u2.maxFriendWithUser[u1.ID]
-	}
+
+	return result
 }
