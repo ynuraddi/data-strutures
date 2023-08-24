@@ -5,12 +5,6 @@ func main() {
 }
 
 func singleNonDuplicate(nums []int) int {
-	// if len(nums) < 2 {
-	// 	return nums[0]
-	// }
-
-	// l, r := 0, len(nums)-1
-	// for {
-
-	// }
+	// TODO
+	return 0
 }
